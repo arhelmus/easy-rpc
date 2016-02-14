@@ -1,7 +1,7 @@
 Easy RPC
 =========================
 
-This library provides easy TCP RPC service with binary serialization.
+This library implements easy TCP RPC service with binary serialization.
 Main goal of it, just provide ready solution for communication between services.
 
 ### Features:
