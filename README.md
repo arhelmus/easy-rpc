@@ -8,6 +8,7 @@ Main goal of it, just provide ready solution for communication between services.
 * Binary serialization (based on boopickle)
 * TCP as data channel (based on akka-streams)
 * Backpressure
+* Asynchrony
 
 ### Usage example
 ```
