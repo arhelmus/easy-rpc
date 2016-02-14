@@ -13,7 +13,7 @@ Main goal of this library - just provide ready solution for communication betwee
 * Asynchrony
 
 ## Usage example:
-```
+```scala
 trait EchoService {
   def echo(message: String): String
 }
