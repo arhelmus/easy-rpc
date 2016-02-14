@@ -10,7 +10,7 @@ Main goal of it, just provide ready solution for communication between services.
 * Backpressure
 * Asynchrony
 
-### Usage example
+### Usage example:
 ```
 trait EchoService {
   def echo(message: String): String
