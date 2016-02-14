@@ -1,6 +1,8 @@
 Easy RPC
 =========================
 
+[![Build Status](https://travis-ci.org/ArchDev/easy-rpc.svg?branch=master)](https://travis-ci.org/ArchDev/easy-rpc)
+
 Implementation of TCP RPC communication with binary serialization.
 Main goal of this library - just provide ready solution for communication between services.
 
