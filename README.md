@@ -34,7 +34,7 @@ object Application extends App {
   val rpcHost = "localhost"
   val rpcPort = 20000
 
-  val rpcServer = new RpcServer(Router.route[EchoService](new EchoServiceImpl))
+  val rpcServer = new RpcServer(Router.route[EchoService](new EchoServiceImpl), backpressure = 42)
   rpcServer.start(rpcHost, rpcPort)
   
   val rpcClient = new RpcClient(rpcHost, rpcPort)
