@@ -46,6 +46,5 @@ object Application extends App {
 ```
 
 ### Copyright
-Copyright (C) 2015 Arthur Kushka.
-
+Copyright (C) 2015 Arthur Kushka.  
 Distributed under the MIT License.
