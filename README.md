@@ -3,12 +3,12 @@ Easy RPC
 
 [![Build Status](https://travis-ci.org/ArchDev/easy-rpc.svg?branch=master)](https://travis-ci.org/ArchDev/easy-rpc)
 
-Implementation of TCP RPC communication with binary serialization.
+Implementation of TCP RPC communication with binary serialization based on [Autowire](https://github.com/lihaoyi/autowire).
 Main goal of this library - just provide ready solution for communication between services.
 
 ### Features:
-* Binary serialization (based on boopickle)
-* TCP as data channel (based on akka-streams)
+* Binary serialization (based on [boopickle](https://github.com/ochrons/boopickle))
+* TCP as data channel (based on [akka-streams](https://github.com/akka/akka))
 * Backpressure
 * Asynchrony
 
