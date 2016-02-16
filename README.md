@@ -12,6 +12,12 @@ Main goal of this library - just provide ready solution for communication betwee
 * Backpressure
 * Asynchrony
 
+### Dependency:
+```scala
+resolvers += Resolver.sonatypeRepo("public")
+libraryDependencies += "me.archdev" %% "easy-rpc" % "1.0"
+```
+
 ## Usage example:
 ```scala
 trait EchoService {
