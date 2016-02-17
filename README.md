@@ -15,7 +15,7 @@ Main goal of this library - just provide ready solution for communication betwee
 ### Dependency:
 ```scala
 resolvers += Resolver.sonatypeRepo("public")
-libraryDependencies += "me.archdev" %% "easy-rpc" % "1.0"
+libraryDependencies += "me.archdev" %% "easy-rpc" % "1.0.1"
 ```
 
 ## Usage example:
