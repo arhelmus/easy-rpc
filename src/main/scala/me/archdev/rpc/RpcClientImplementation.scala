@@ -13,6 +13,7 @@ import scala.concurrent.{ExecutionContext, Future}
 private[rpc] class RpcClientImplementation(tcpConnection: OutgoingTcpConnection)
   (implicit as: ActorSystem, ec: ExecutionContext, m: Materializer) extends Client[ByteBuffer, Pickler, Pickler] {
 
+  // TODO: WTF, here returned only first one response. Must be rewritten.
   override def doCall(req: Request): Future[ByteBuffer] =
     Source.single(RpcRequest(req.path, req.args))
       .map(RpcRequest.serialize)

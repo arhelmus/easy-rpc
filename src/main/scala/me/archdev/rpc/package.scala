@@ -8,8 +8,6 @@ import akka.stream.scaladsl.Tcp.{IncomingConnection, OutgoingConnection, ServerB
 import akka.stream.scaladsl.{Flow, Source, Tcp}
 import akka.util.ByteString
 import autowire.ClientProxy
-import autowire.Error.InvalidInput
-import autowire.Error.Param.{Invalid, Missing}
 import boopickle.{Pickler => _, _}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -25,28 +23,6 @@ package object rpc extends DefaultBoopicklePicklers {
   class RpcServer(router: Router.Router, parallelism: Int = 100)(implicit as: ActorSystem, ec: ExecutionContext, m: Materializer) {
     private val server = new RpcServerImplementation(router, parallelism)
     def launch(host: String, port: Int) = server.launch(Tcp().bind(host, port))
-  }
-
-  class RpcInvocationException(message: String) extends RuntimeException(message)
-  case class ErrorOccurredException(name: String, message: String, stackTrace: Seq[String]) extends RpcInvocationException("Rpc invocation exception. Error occurred.")
-
-  case class MethodNotFoundException(classPath: String, method: String)
-    extends RpcInvocationException(s"Rpc invocation exception. Cannot find method '$method' in class '$classPath'.")
-  object MethodNotFoundException {
-    def apply(matchError: MatchError) = {
-      val path = matchError.getMessage().drop(15).takeWhile(_ != ')').split(",").map(_.trim)
-      new MethodNotFoundException(path.dropRight(1).mkString("."), path.last)
-    }
-  }
-
-  case class InvalidMethodParametersException(invalidParameters: Seq[String])
-    extends RpcInvocationException(s"Rpc invocation exception. Invalid method parameters: ${invalidParameters.mkString(", ")}.")
-  object InvalidMethodParametersException {
-    def apply(invalidInputEx: InvalidInput) =
-      new InvalidMethodParametersException(invalidInputEx.exs.map {
-        case Missing(p) => p
-        case Invalid(p, ex) => p
-      })
   }
 
 }
