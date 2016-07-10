@@ -1,21 +1,15 @@
 package me.archdev.it
 
-import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
-import me.archdev.rpc._
-import me.archdev.utils.{TestService, TestServiceRouter}
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{Matchers, WordSpec}
-
-import scala.concurrent.ExecutionContext
-import scala.util.Random
 import autowire._
+import me.archdev.rpc._
+import me.archdev.utils.{AkkaTest, TestService, TestServiceRouter}
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.{Matchers, WordSpecLike}
 
-class EasyRpcIT extends WordSpec with Matchers with ScalaFutures {
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.Random
 
-  implicit val system = ActorSystem()
-  implicit val executionContext: ExecutionContext = system.dispatcher
-  implicit val materializer: ActorMaterializer = ActorMaterializer()
+class EasyRpcIT extends AkkaTest with WordSpecLike with Matchers with ScalaFutures {
 
   trait Context {
     val rpcHost = "localhost"

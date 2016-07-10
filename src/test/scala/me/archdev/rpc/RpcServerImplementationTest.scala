@@ -8,7 +8,7 @@ import org.scalatest.{Matchers, WordSpecLike}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class RpcServerImplementationTest extends AkkaTest with WordSpecLike with Matchers with ScalaFutures {
+class RpcServerImplementationTest extends AkkaTest with WordSpecLike with Matchers {
 
   "Rpc Server implementation" should {
 
