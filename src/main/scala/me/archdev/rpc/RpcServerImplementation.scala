@@ -7,7 +7,7 @@ import akka.util.ByteString
 
 import scala.concurrent.ExecutionContext
 
-class RpcServerImplementation(router: Router.Router, parallelism: Int = 100)
+private[rpc] class RpcServerImplementation(router: Router.Router, parallelism: Int = 100)
   (implicit actorSystem: ActorSystem, executionContext: ExecutionContext, materializer: Materializer) {
 
   def launch(host: String, port: Int) = {
