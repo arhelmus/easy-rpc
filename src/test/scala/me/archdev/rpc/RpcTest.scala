@@ -8,9 +8,12 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.concurrent.ExecutionContext
-import boopickle.Default._
 
 class RpcTest extends WordSpec with Matchers with ScalaFutures {
+
+  implicit val system = ActorSystem()
+  implicit val executionContext: ExecutionContext = system.dispatcher
+  implicit val materializer: ActorMaterializer = ActorMaterializer()
 
   trait EchoService {
     def echo(message: String): String
@@ -21,12 +24,7 @@ class RpcTest extends WordSpec with Matchers with ScalaFutures {
   }
 
   trait Context {
-    implicit val system = ActorSystem()
-    implicit val executionContext: ExecutionContext = system.dispatcher
-    implicit val materializer: ActorMaterializer = ActorMaterializer()
-
     val rpcServer = new RpcServer(Router.route[EchoService](new EchoServiceImpl))
-
     val rpcHost = "localhost"
     val rpcPort = 20000
   }
@@ -46,18 +44,13 @@ class RpcTest extends WordSpec with Matchers with ScalaFutures {
       deserializedByteBuffer should be(byteBuffer)
     }
 
-    "bind server" in new Context {
-      rpcServer.start(rpcHost, rpcPort + 1)
-    }
-
     "perform call" in new Context {
-      rpcServer.start(rpcHost, rpcPort)
-      val rpcClient = new RpcClient(rpcHost, rpcPort)
+      rpcServer.launch(rpcHost, rpcPort)
+      val rpcClient = new RpcClient[EchoService](rpcHost, rpcPort)
 
       import autowire._
-      val message = "echo"
-      whenReady(rpcClient[EchoService].echo(message).call()) { echo =>
-        message should be(echo)
+      whenReady(rpcClient.echo("echo").call()) { echo =>
+        "echo" should be(echo)
       }
     }
 
