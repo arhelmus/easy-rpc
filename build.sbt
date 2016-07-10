@@ -6,15 +6,19 @@ version := "1.0.1"
 
 scalaVersion := "2.11.8"
 
-libraryDependencies ++= Seq(
-  "com.typesafe.scala-logging" %% "scala-logging" % "3.1.0",
+libraryDependencies ++= {
+  val akkaV = "2.4.8"
+  Seq(
+    "com.typesafe.akka" %% "akka-stream" % akkaV,
 
-  "com.typesafe.akka" %% "akka-stream-experimental" % "2.0.3",
-  "org.scalatest" %% "scalatest" % "2.2.4",
+    "com.lihaoyi" %% "autowire" % "0.2.5",
+    "me.chrons" %% "boopickle" % "1.2.4",
 
-  "com.lihaoyi" %% "autowire" % "0.2.5",
-  "me.chrons" %% "boopickle" % "1.1.0"
-)
+    "org.scalatest" %% "scalatest" % "2.2.4" % "test",
+    "com.typesafe.akka" %% "akka-testkit" % akkaV  % "test",
+    "com.typesafe.akka" %% "akka-stream-testkit" % akkaV % "test"
+  )
+}
 
 publishTo := {
   val nexus = "https://oss.sonatype.org/"
