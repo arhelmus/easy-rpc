@@ -4,6 +4,7 @@ import java.nio.ByteBuffer
 
 import akka.util.ByteString
 import me.archdev.rpc._
+import me.archdev.rpc.protocol.{RpcRequest, RpcResponse}
 
 import scala.concurrent.ExecutionContext
 
@@ -23,16 +24,20 @@ object TestServiceRouter {
     Router.route[TestService](echoServiceImpl)
 
   def echoRequest(message: String) =
-    RpcRequest(
+    RpcRequest(1,
       Vector("me", "archdev", "utils", "TestService", "echo"),
       Map("message" -> Pickle.intoBytes(message))
     )
 
   def echoResponse(message: String) =
-    ByteString(ByteBuffer.wrap(Array(4.toByte) ++ s"$message".toArray.map(_.toByte)))
+    RpcResponse(
+      1,
+      Some(ByteBuffer.wrap(Array(4.toByte) ++ s"$message".toArray.map(_.toByte))),
+      None
+    )
 
   def throwRequest() =
-    RpcRequest(
+    RpcRequest(1,
       Vector("me", "archdev", "utils", "TestService", "throwEx"),
       Map()
     )
