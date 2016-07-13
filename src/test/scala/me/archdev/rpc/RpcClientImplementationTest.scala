@@ -56,7 +56,7 @@ class RpcClientImplementationTest extends AkkaTest with WordSpecLike with Matche
 
   trait Context {
 
-    val rpcClient = new RpcClientImplementation(Tcp().outgoingConnection("anywhere", 8080))
+    val rpcClient = new RpcClientImplementation(Tcp().outgoingConnection("anywhere", 8080))()
     val testByteBuffer = ByteBuffer.allocate(0)
 
     def getIdCounter =

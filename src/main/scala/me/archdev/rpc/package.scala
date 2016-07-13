@@ -19,7 +19,7 @@ package object rpc extends DefaultBoopicklePicklers {
   type OutgoingTcpConnection = Flow[ByteString, ByteString, Future[OutgoingConnection]]
 
   class RpcClient[T](host: String, port: Int)(implicit as: ActorSystem, ec: ExecutionContext, m: Materializer)
-    extends ClientProxy[T, ByteBuffer, Pickler, Pickler](new RpcClientImplementation(Tcp().outgoingConnection(host, port)))
+    extends ClientProxy[T, ByteBuffer, Pickler, Pickler](new RpcClientImplementation(Tcp().outgoingConnection(host, port))())
 
   object Router extends autowire.Server[ByteBuffer, Pickler, Pickler] {
     override def read[R: Pickler](p: ByteBuffer) = Unpickle[R].fromBytes(p)

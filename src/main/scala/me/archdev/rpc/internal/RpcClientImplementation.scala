@@ -1,7 +1,6 @@
 package me.archdev.rpc.internal
 
 import java.nio.ByteBuffer
-import java.util.concurrent.atomic.AtomicLong
 
 import akka.actor.ActorSystem
 import akka.stream.QueueOfferResult.{Dropped, QueueClosed, _}
@@ -12,17 +11,21 @@ import autowire.Client
 import me.archdev.rpc._
 import me.archdev.rpc.protocol._
 
-import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future, Promise}
 
 private[rpc] class RpcClientImplementation(tcpConnection: OutgoingTcpConnection)
-  (implicit as: ActorSystem, ec: ExecutionContext, m: Materializer) extends Client[ByteBuffer, Pickler, Pickler] {
+  (bufferSize: Int = 100, overflowStrategy: OverflowStrategy = OverflowStrategy.dropNew)
+  (implicit as: ActorSystem, ec: ExecutionContext, m: Materializer) extends Client[ByteBuffer, Pickler, Pickler] with AsyncRpcClient {
 
-  val idCounter = new AtomicLong(0)
-  val promiseMapping: mutable.Map[Long, Promise[ByteBuffer]] = mutable.Map()
+  override def doCall(req: Request): Future[ByteBuffer] =
+    formRPCRequest(req.path, req.args) match {
+      case (request, promise) =>
+        flow.offer(request).flatMap(queueOfferResultToResultFuture(_, promise))
+    }
 
-  private val bufferSize = 100
-  private val overflowStrategy = OverflowStrategy.dropNew
+  override def read[Result: Pickler](p: ByteBuffer) = Unpickle[Result].fromBytes(p)
+
+  override def write[Result: Pickler](r: Result) = Pickle.intoBytes(r)
 
   val flow = Source.queue[RpcRequest](bufferSize, overflowStrategy)
     .map(RpcRequest.serialize)
@@ -32,44 +35,6 @@ private[rpc] class RpcClientImplementation(tcpConnection: OutgoingTcpConnection)
     .map(RpcResponse.deserialize)
     .toMat(Sink.foreach[RpcResponse](finishRPCRequest))(Keep.left)
     .run()
-
-  override def doCall(req: Request): Future[ByteBuffer] =
-    formRPCRequest(req.path, req.args) match {
-      case (request, promise) =>
-        flow.offer(request).flatMap(queueOfferResultToResultFuture(_, promise))
-    }
-
-  def read[Result: Pickler](p: ByteBuffer) = Unpickle[Result].fromBytes(p)
-
-  def write[Result: Pickler](r: Result) = Pickle.intoBytes(r)
-
-  def formRPCRequest(path: Seq[String], args: Map[String, ByteBuffer]) = {
-    val rpcRequest = RpcRequest(idCounter.getAndAdd(1), path, args)
-    val promise = Promise[ByteBuffer]
-    promiseMapping.put(rpcRequest.id, promise)
-
-    rpcRequest -> promise
-  }
-
-  def finishRPCRequest(rpcResponse: RpcResponse): Unit =
-    rpcResponse match {
-      case RpcResponse(id, Some(data), None) if promiseMapping.contains(id) =>
-        promiseMapping(id).success(data)
-        promiseMapping.remove(id)
-      case RpcResponse(id, None, Some(error)) if promiseMapping.contains(id) =>
-        promiseMapping(id).failure(formExceptionFromError(error))
-        promiseMapping.remove(id)
-    }
-
-  private def formExceptionFromError(error: ErrorProtocol) =
-    error match {
-      case e: ExceptionIsThrownError =>
-        RemoteRpcException(e.name, e.exMessage, e.stackTrace)
-      case e: InvalidMethodParametersError =>
-        InvalidProtocolException(e.message)
-      case e: MethodNotFoundError =>
-        InvalidProtocolException(e.message)
-    }
 
   private def queueOfferResultToResultFuture(queueOfferResult: QueueOfferResult, promise: Promise[ByteBuffer]) =
     queueOfferResult match {
