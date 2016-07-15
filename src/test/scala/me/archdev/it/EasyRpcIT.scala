@@ -28,13 +28,13 @@ class EasyRpcIT extends AkkaTest with WordSpecLike with Matchers with ScalaFutur
       }
     }
 
-//    "don't fall on exception" in new Context {
-//      whenReady(rpcClient.throwEx().call()) { _ =>
-//        whenReady(rpcClient.echo("echo").call()) { echo =>
-//          "echo" should be(echo)
-//        }
-//      }
-//    }
+    "don't fall on exception" in new Context {
+      whenReady(rpcClient.throwEx().call().failed) { _ =>
+        whenReady(rpcClient.echo("echo").call()) { echo =>
+          "echo" should be(echo)
+        }
+      }
+    }
 
   }
 

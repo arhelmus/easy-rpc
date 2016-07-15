@@ -8,12 +8,37 @@ import autowire.Error.InvalidInput
 import me.archdev.rpc._
 import me.archdev.rpc.protocol._
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
 
 private[rpc] class RpcServerImplementation(router: Router.Router, parallelism: Int = 100)
   (implicit as: ActorSystem, ec: ExecutionContext, m: Materializer) {
 
-  val handleErrors: PartialFunction[Throwable, ErrorProtocol] = {
+  val rpcServerFlow = Flow[ByteString]
+    .map(deserializeRequest)
+    .mapAsync(parallelism)(executeRpcRequest(_, router))
+    .map(serializeResponse)
+    .recover {
+      case ex: Throwable =>
+        throw new RuntimeException("Unexpected exception in rpc server flow.", ex)
+    }
+
+  def launch(connection: IncomingTcpConnection) =
+    connection.runForeach(_.handleWith(rpcServerFlow))
+
+  private def deserializeRequest(byteString: ByteString): Try[RpcRequest] =
+    Try(RpcRequest.deserialize(byteString.asByteBuffer))
+
+  private def executeRpcRequest(rpcRequestTry: Try[RpcRequest], router: Router.Router): Future[RpcResponse] =
+    rpcRequestTry.map(wireRpcRequest(router, _)) match {
+      case Success(rpcResponse) => rpcResponse
+      case Failure(ex) => ???
+    }
+
+  private def serializeResponse(rpcResponse: RpcResponse): ByteString =
+    ByteString(RpcResponse.serialize(rpcResponse))
+
+  private val routerErrorHandler: PartialFunction[Throwable, ErrorProtocol] = {
     case ex: MatchError =>
       MethodNotFoundError(ex)
     case ex: InvalidInput =>
@@ -26,20 +51,10 @@ private[rpc] class RpcServerImplementation(router: Router.Router, parallelism: I
       )
   }
 
-  // TODO: refactor flow on XOR composition
-  val rpcServerFlow = Flow[ByteString]
-    .map(_.asByteBuffer)
-    .map(RpcRequest.deserialize)
-    .map(r => r.id -> autowire.Core.Request(r.path, r.params))
-    .mapAsync(parallelism)(r => router(r._2).map(r._1 -> _))
-    .map(r => RpcResponse(r._1, Some(r._2), None))
-    .map(RpcResponse.serialize)
-    .map(ByteString.apply)
-    .recover(handleErrors andThen formErrorResponse)
+  private def wireRpcRequest(router: Router.Router, r: RpcRequest) =
+    Future.successful()
+      .flatMap(_ => router(autowire.Core.Request(r.path, r.params)))
+      .map(result => SuccessfulRpcResponse(r.id, result))
+      .recover(routerErrorHandler.andThen(FailedRpcResponse(r.id, _)))
 
-  def launch(connection: IncomingTcpConnection) =
-    connection.runForeach(_.handleWith(rpcServerFlow))
-
-  private def formErrorResponse(errorProtocol: ErrorProtocol) =
-    ByteString(RpcResponse.serialize(RpcResponse(1, None, Some(errorProtocol))))
 }

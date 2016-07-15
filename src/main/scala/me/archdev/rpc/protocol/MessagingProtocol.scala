@@ -29,3 +29,11 @@ object RpcResponse {
   def serialize(rpcResponse: RpcResponse): ByteBuffer = Pickle.intoBytes(rpcResponse)
   def deserialize(byteBuffer: ByteBuffer): RpcResponse = Unpickle[RpcResponse].fromBytes(byteBuffer)
 }
+object SuccessfulRpcResponse {
+  def apply(id: Long, result: ByteBuffer) =
+    new RpcResponse(id, Some(result), None)
+}
+object FailedRpcResponse {
+  def apply(id: Long, error: ErrorProtocol) =
+    new RpcResponse(id, None, Some(error))
+}
