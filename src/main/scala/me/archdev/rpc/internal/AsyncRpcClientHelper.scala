@@ -9,7 +9,10 @@ import me.archdev.rpc.protocol.{MethodNotFoundError, _}
 import scala.collection.mutable
 import scala.concurrent.Promise
 
-trait AsyncRpcClient {
+/**
+  * Helper class that contains specific for async rpc implementation stuff.
+  */
+trait AsyncRpcClientHelper {
 
   val idCounter = new AtomicLong(0)
   val promiseMapping: mutable.Map[Long, Promise[ByteBuffer]] = mutable.Map()
@@ -30,6 +33,10 @@ trait AsyncRpcClient {
       case RpcResponse(id, None, Some(error)) if promiseMapping.contains(id) =>
         promiseMapping(id).failure(formExceptionFromError(error))
         promiseMapping.remove(id)
+      case RpcResponse(id, None, Some(error)) =>
+        println("Bad things was happened")
+      case RpcResponse(id, _, _) =>
+        println("Bad things was happened")
     }
 
   private def formExceptionFromError(error: ErrorProtocol) =

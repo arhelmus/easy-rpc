@@ -18,6 +18,13 @@ case class ExceptionIsThrownError(name: String, exMessage: String, stackTrace: S
 }
 
 /**
+  * Indicates that something unpredictable is happens.
+  */
+case class ErrorIsOccurred(name: String, errorMessage: String, stackTrace: Seq[String]) extends ErrorProtocol {
+  val message = "Unexpected error occurred."
+}
+
+/**
   * Indicates that requested class or method does not exists.
   */
 case class MethodNotFoundError(classPath: String, method: String) extends ErrorProtocol {
@@ -38,6 +45,20 @@ object ExceptionIsThrownError {
     */
   def apply(throwable: Throwable) =
     new ExceptionIsThrownError(
+      throwable.getClass.getSimpleName,
+      throwable.getMessage,
+      throwable.getStackTrace.map(_.toString)
+    )
+
+}
+
+object ErrorIsOccurred {
+
+  /**
+    * Build error from exception.
+    */
+  def apply(throwable: Throwable) =
+    new ErrorIsOccurred(
       throwable.getClass.getSimpleName,
       throwable.getMessage,
       throwable.getStackTrace.map(_.toString)

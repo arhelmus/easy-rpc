@@ -20,7 +20,7 @@ private[rpc] class RpcServerImplementation(router: Router.Router, parallelism: I
     .map(serializeResponse)
     .recover {
       case ex: Throwable =>
-        throw new RuntimeException("Unexpected exception in rpc server flow.", ex)
+        serializeResponse(FailedRpcResponse(-1, ErrorIsOccurred(ex)))
     }
 
   def launch(connection: IncomingTcpConnection) =
@@ -31,8 +31,10 @@ private[rpc] class RpcServerImplementation(router: Router.Router, parallelism: I
 
   private def executeRpcRequest(rpcRequestTry: Try[RpcRequest], router: Router.Router): Future[RpcResponse] =
     rpcRequestTry.map(wireRpcRequest(router, _)) match {
-      case Success(rpcResponse) => rpcResponse
-      case Failure(ex) => ???
+      case Success(rpcResponse) =>
+        rpcResponse
+      case Failure(ex) =>
+        Future.successful(FailedRpcResponse(-1, ErrorIsOccurred(ex)))
     }
 
   private def serializeResponse(rpcResponse: RpcResponse): ByteString =

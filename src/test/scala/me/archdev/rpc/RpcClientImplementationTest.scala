@@ -75,7 +75,7 @@ class RpcClientImplementationTest extends AkkaTest with WordSpecLike with Matche
       rpcClient.finishRPCRequest(RpcResponse(0, None, Some(errorProtocol)))
 
     def putDataInFlow(rpcRequest: RpcRequest) =
-      rpcClient.flow.offer(rpcRequest)
+      rpcClient.rpcStream.offer(rpcRequest)
 
   }
 
