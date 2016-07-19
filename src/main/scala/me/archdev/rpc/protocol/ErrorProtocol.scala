@@ -11,7 +11,7 @@ sealed trait ErrorProtocol {
 }
 
 /**
-  * Indicates that exception was been thrown on server.
+  * Indicates that exception was been thrown on server during method execution.
   */
 case class ExceptionIsThrownError(name: String, exMessage: String, stackTrace: Seq[String]) extends ErrorProtocol {
   val message = "Rpc invocation exception. Exception is thrown."
