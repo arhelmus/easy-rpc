@@ -58,6 +58,19 @@ object Application extends App {
 * Auto-reconnect of client on any connection issue;
 * Inclusion of autowire into library codebase to provide better user interface.
 
+## Messaging protocol
+Messaging between client and server builded on top of binary serialization with [boopickle](https://github.com/ochrons/boopickle) library. To do request you must send data model that will look like:   
+
+* __id: Long__ - unique identifier of request, used in asyncrony client implementation
+* __path: Seq[String]__ - elements of method path. As example for method 'test' in class 'me.archdev.TestMethod' it will be like Seq('me', 'archdev', 'TestMethod', 'test')
+* __params: Map[String, ByteBuffer]__ - serialized parameters map where key is method parameter name
+
+As response you may took model that contains:
+* __id: Long__ - unique identifier of request for client purposes
+* __data: Option[ByteBuffer]__ - serialized method response or None, if something goes wrong
+* __error: Option[ErrorProtocol]__ - error description, if it has. You can see error types [here](https://github.com/ArchDev/easy-rpc/blob/master/src/main/scala/me/archdev/rpc/protocol/ErrorProtocol.scala)
+
+
 ## Copyright
 Copyright (C) 2015 Arthur Kushka.  
 Distributed under the MIT License.
