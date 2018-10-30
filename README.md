@@ -13,6 +13,7 @@ Main goal of this library - just provide ready solution for communication betwee
 * Asynchrony
 
 ### Dependency:
+Think twice before use, its not supported!
 ```scala
 resolvers += Resolver.sonatypeRepo("public")
 libraryDependencies += "me.archdev" %% "easy-rpc" % "1.1.0"
